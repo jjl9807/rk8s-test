@@ -34,6 +34,10 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: clippy rustfmt
+          cache-workspaces: |
+            ./project
+          cache-directories: |
+            ./project/target
 
   format:
     name: Rustfmt Check
@@ -85,6 +89,12 @@ jobs:
     needs: setup
 
     steps:
+      - name: Restore buck-out cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ./buck-out
+          key: buck-out
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -99,11 +109,11 @@ jobs:
           reindeer --third-party-dir third-party buckify
           buck2 build //project/...
 
-      - name: Cache buck-out
+      - name: Save buck-out cache
         uses: actions/cache/save@v4
         with:
           path: ./buck-out
-          key: buck2-cache-${{ github.run_id }}-${{ github.run_attempt }}
+          key: buck-out
 
   test:
     name: Buck2 Test

@@ -3,6 +3,15 @@ name: 'Install System Tools and Dependencies'
 runs:
   using: "composite"
   steps:
+    - name: Restore cache
+      id: cache-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          /var/cache/apt/
+          $HOME/.cargo
+        key: sysdeps
+
     - name: Update APT Cache
       run: sudo apt-get update
       shell: bash
@@ -26,3 +35,12 @@ runs:
     - name: Install Reindeer
       run: cargo install --locked --git https://github.com/facebookincubator/reindeer reindeer
       shell: bash
+
+    - name: Save cache
+      if: ${{ steps.cache-restore.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          /var/cache/apt/
+          $HOME/.cargo
+        key: sysdeps
